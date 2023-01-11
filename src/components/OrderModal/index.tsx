@@ -7,11 +7,21 @@ import { ModalBody, OrderDetails, Overlay, Actions } from './styles';
 
 interface OrderModalProps {
   visible: boolean;
+  isLoading: boolean;
   order: Order | null;
   onClose: () => void;
+  onCancelOrder: () => Promise<void>;
+  onChangeOrderStatus: () => void;
 }
 
-export function OrderModal({ visible, order, onClose }: OrderModalProps) {
+export function OrderModal({
+  visible,
+  isLoading,
+  order,
+  onClose,
+  onCancelOrder,
+  onChangeOrderStatus,
+}: OrderModalProps) {
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
@@ -40,12 +50,18 @@ export function OrderModal({ visible, order, onClose }: OrderModalProps) {
         <header>
           <strong>Mesa {order.table}</strong>
 
-          <button type="button" onClick={onClose}>
-            <img src={closeIcon} alt="Ícone de fechar" />
+          <button
+            type='button'
+            onClick={onClose}
+          >
+            <img
+              src={closeIcon}
+              alt='Ícone de fechar'
+            />
           </button>
         </header>
 
-        <div className="status-container">
+        <div className='status-container'>
           <small>Status do Pedido</small>
           <div>
             <span>
@@ -64,19 +80,22 @@ export function OrderModal({ visible, order, onClose }: OrderModalProps) {
         <OrderDetails>
           <strong>Itens</strong>
 
-          <div className="order-items">
+          <div className='order-items'>
             {order.products.map(({ _id, product, quantity }) => (
-              <div className="item" key={_id}>
+              <div
+                className='item'
+                key={_id}
+              >
                 <img
                   src={`http://localhost:3001/uploads/${product.imagePath}`}
                   alt={product.name}
-                  width="56"
-                  height="28.51"
+                  width='56'
+                  height='28.51'
                 />
 
-                <span className="quantity">{quantity}x</span>
+                <span className='quantity'>{quantity}x</span>
 
-                <div className="product-details">
+                <div className='product-details'>
                   <strong>{product.name}</strong>
                   <span>{formatCurrency(product.price)}</span>
                 </div>
@@ -84,19 +103,37 @@ export function OrderModal({ visible, order, onClose }: OrderModalProps) {
             ))}
           </div>
 
-          <div className="total">
+          <div className='total'>
             <span>Total</span>
             <strong>{formatCurrency(total)}</strong>
           </div>
         </OrderDetails>
 
         <Actions>
-          <button type="button" className="primary">
-            <span>👨‍🍳</span>
-            <strong>Iniciar Produção</strong>
-          </button>
+          {order.status !== 'DONE' && (
+            <button
+              type='button'
+              className='primary'
+              disabled={isLoading}
+              onClick={onChangeOrderStatus}
+            >
+              <span>
+                {order.status === 'WAITING' && '👨‍🍳'}
+                {order.status === 'IN_PRODUCTION' && '✅'}
+              </span>
+              <strong>
+                {order.status === 'WAITING' && 'Iniciar Produção'}
+                {order.status === 'IN_PRODUCTION' && 'Concluir Pedido'}
+              </strong>
+            </button>
+          )}
 
-          <button type="button" className="secondary">
+          <button
+            type='button'
+            className='secondary'
+            onClick={onCancelOrder}
+            disabled={isLoading}
+          >
             Cancelar Pedido
           </button>
         </Actions>
